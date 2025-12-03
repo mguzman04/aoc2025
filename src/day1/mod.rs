@@ -11,15 +11,22 @@ fn move_dial(initial_position: i32, direction: Direction, clicks: i32) -> i32 {
                 return 100 - clicks;
             } else {
                 let remainder = initial_position - clicks;
+                if remainder < 0 {
+                    return 100 + remainder;
+                }
                 remainder
             }
         }
         Direction::Right => {
             // go positive
             if initial_position == 99 {
-                return 0 + clicks - 1;
+                return clicks - 1;
             } else {
-                0
+                let sum = initial_position + clicks;
+                if sum > 99 {
+                    return sum - 100;
+                }
+                sum
             }
         }
     }
