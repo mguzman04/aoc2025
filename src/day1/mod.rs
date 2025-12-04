@@ -1,9 +1,32 @@
-enum Direction {
+pub enum Direction {
     Left,
     Right,
 }
 
-fn move_dial(initial_position: i32, direction: Direction, clicks: i32) -> i32 {
+pub struct Rotation {
+    pub direction: Direction,
+    pub clicks: i32,
+}
+
+impl Rotation {
+    pub fn new(input: String) -> Rotation {
+        let (direction, clicks) = input.split_at(1);
+        Rotation {
+            direction: Self::to_direction(direction),
+            clicks: clicks.parse::<i32>().expect("Failed to parse string"),
+        }
+    }
+
+    fn to_direction(directtion_str: &str) -> Direction {
+        if directtion_str == "L" {
+            return Direction::Left;
+        }
+        Direction::Right
+    }
+}
+
+/// Returns the new position of the dial
+pub fn move_dial(initial_position: i32, direction: Direction, clicks: i32) -> i32 {
     match direction {
         Direction::Left => {
             // go negative
