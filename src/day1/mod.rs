@@ -37,11 +37,12 @@ pub fn count_zero_landings(lines: Lines<BufReader<File>>) -> (i32, i32) {
     let mut dial_position = 50;
     for line in lines.map_while(Result::ok) {
         let rotation = Rotation::new(line);
-        dial_position = move_dial(dial_position, rotation.direction, rotation.clicks);
+        dial_position = move_dial(dial_position, &rotation.direction, rotation.clicks);
         if dial_position == 0 {
             total_zeros += 1;
         }
-        if dial_position == 0 || zero_crossing(dial_position, rotation.clicks) {
+        if dial_position == 0 || zero_crossing(dial_position, &rotation.direction, rotation.clicks)
+        {
             total_crossings += 1;
         }
     }
@@ -49,16 +50,27 @@ pub fn count_zero_landings(lines: Lines<BufReader<File>>) -> (i32, i32) {
 }
 
 /// Returns True if dial crossed zero
-fn zero_crossing(initial_position: i32, clicks: i32) -> bool {
+fn zero_crossing(initial_position: i32, direction: &Direction, clicks: i32) -> bool {
     let mut count = clicks / 100;
-    if clicks % 100 > initial_position {
-        count += 1;
+    let remainder = clicks % 100;
+    let dial = move_dial(initial_position, direction, remainder);
+    match direction {
+        Direction::Left => {
+            if dial >= initial_position {
+                count += 1;
+            }
+        }
+        Direction::Right => {
+            if dial <= initial_position {
+                count += 1
+            }
+        }
     }
     count > 0
 }
 
 /// Returns the new position of the dial
-fn move_dial(initial_position: i32, direction: Direction, clicks: i32) -> i32 {
+fn move_dial(initial_position: i32, direction: &Direction, clicks: i32) -> i32 {
     let clicks = clicks % 100;
     match direction {
         Direction::Left => {
@@ -94,7 +106,7 @@ mod test {
 
     #[test]
     fn dial_left_from_zero() {
-        let new_position = move_dial(0, Direction::Left, 1);
+        let new_position = move_dial(0, &Direction::Left, 1);
         assert_eq!(
             new_position, 99,
             "Expected new position to be 99 not {}",
@@ -104,7 +116,7 @@ mod test {
 
     #[test]
     fn dial_left_middle_change() {
-        let new_position = move_dial(50, Direction::Left, 10);
+        let new_position = move_dial(50, &Direction::Left, 10);
         assert_eq!(
             new_position, 40,
             "Expected new position to be 40 not {}",
@@ -114,7 +126,7 @@ mod test {
 
     #[test]
     fn dial_left_middle_change_cycle() {
-        let new_position = move_dial(10, Direction::Left, 20);
+        let new_position = move_dial(10, &Direction::Left, 20);
         assert_eq!(
             new_position, 90,
             "Expected new position to be 90 not {}",
@@ -124,13 +136,13 @@ mod test {
 
     #[test]
     fn dial_left_multiple_cycles() {
-        let new_position = move_dial(95, Direction::Left, 200);
+        let new_position = move_dial(95, &Direction::Left, 200);
         assert_eq!(new_position, 95, "Expected to be on the same position");
     }
 
     #[test]
     fn dial_right_from_99() {
-        let new_position = move_dial(99, Direction::Right, 1);
+        let new_position = move_dial(99, &Direction::Right, 1);
         assert_eq!(
             new_position, 0,
             "Expected new position to be 0 not {}",
@@ -140,7 +152,7 @@ mod test {
 
     #[test]
     fn dial_right_middle_change() {
-        let new_position = move_dial(40, Direction::Right, 10);
+        let new_position = move_dial(40, &Direction::Right, 10);
         assert_eq!(
             new_position, 50,
             "Expected new position to be 50 not {}",
@@ -150,7 +162,7 @@ mod test {
 
     #[test]
     fn dial_right_middle_change_cycle() {
-        let new_position = move_dial(90, Direction::Right, 20);
+        let new_position = move_dial(90, &Direction::Right, 20);
         assert_eq!(
             new_position, 10,
             "Expected new position to be 10 not {}",
@@ -160,19 +172,29 @@ mod test {
 
     #[test]
     fn dial_right_multiple_cycles() {
-        let new_position = move_dial(10, Direction::Right, 200);
+        let new_position = move_dial(10, &Direction::Right, 200);
         assert_eq!(new_position, 10, "Expected to be on the same position");
     }
 
     #[test]
-    fn zero_crossing_none() {
-        let did_cross = zero_crossing(10, 5);
-        assert!(!did_cross, "Expected not to cross zero");
+    fn zero_crossing_none_right() {
+        let did_cross_right = zero_crossing(4, &Direction::Right, 5);
+        assert!(!did_cross_right, "Expected not to cross zero");
+        let did_cross_left = zero_crossing(4, &Direction::Left, 5);
+        assert!(did_cross_left, "Expected to cross zero");
+    }
+
+    #[test]
+    fn zero_crossing_none_left() {
+        let did_cross_right = zero_crossing(96, &Direction::Right, 5);
+        assert!(did_cross_right, "Expected to cross zero");
+        let did_cross_left = zero_crossing(96, &Direction::Left, 5);
+        assert!(!did_cross_left, "Expected not to cross zero");
     }
 
     #[test]
     fn zero_crossing_multiple_cycles() {
-        let did_cross = zero_crossing(10, 300);
+        let did_cross = zero_crossing(10, &Direction::Left, 300);
         assert!(did_cross, "Expected to cycle 3 times");
     }
 }
