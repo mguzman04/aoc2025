@@ -1,15 +1,18 @@
-pub enum Direction {
+use std::fs::File;
+use std::io::{BufReader, Lines};
+
+enum Direction {
     Left,
     Right,
 }
 
-pub struct Rotation {
-    pub direction: Direction,
-    pub clicks: i32,
+struct Rotation {
+    direction: Direction,
+    clicks: i32,
 }
 
 impl Rotation {
-    pub fn new(input: String) -> Rotation {
+    fn new(input: String) -> Rotation {
         let (direction, clicks) = input.split_at(1);
         Rotation {
             direction: Self::to_direction(direction),
@@ -25,8 +28,37 @@ impl Rotation {
     }
 }
 
+/// Return a tuple where
+/// the first digit is the number of zero landings
+/// and the second digit is the number of zero crossings
+pub fn count_zero_landings(lines: Lines<BufReader<File>>) -> (i32, i32) {
+    let mut total_zeros = 0;
+    let mut total_crossings = 0;
+    let mut dial_position = 50;
+    for line in lines.map_while(Result::ok) {
+        let rotation = Rotation::new(line);
+        dial_position = move_dial(dial_position, rotation.direction, rotation.clicks);
+        if dial_position == 0 {
+            total_zeros += 1;
+        }
+        if dial_position == 0 || zero_crossing(dial_position, rotation.clicks) {
+            total_crossings += 1;
+        }
+    }
+    (total_zeros, total_crossings)
+}
+
+/// Returns True if dial crossed zero
+fn zero_crossing(initial_position: i32, clicks: i32) -> bool {
+    let mut count = clicks / 100;
+    if clicks % 100 > initial_position {
+        count += 1;
+    }
+    count > 0
+}
+
 /// Returns the new position of the dial
-pub fn move_dial(initial_position: i32, direction: Direction, clicks: i32) -> i32 {
+fn move_dial(initial_position: i32, direction: Direction, clicks: i32) -> i32 {
     let clicks = clicks % 100;
     match direction {
         Direction::Left => {
@@ -130,5 +162,17 @@ mod test {
     fn dial_right_multiple_cycles() {
         let new_position = move_dial(10, Direction::Right, 200);
         assert_eq!(new_position, 10, "Expected to be on the same position");
+    }
+
+    #[test]
+    fn zero_crossing_none() {
+        let did_cross = zero_crossing(10, 5);
+        assert!(!did_cross, "Expected not to cross zero");
+    }
+
+    #[test]
+    fn zero_crossing_multiple_cycles() {
+        let did_cross = zero_crossing(10, 300);
+        assert!(did_cross, "Expected to cycle 3 times");
     }
 }
