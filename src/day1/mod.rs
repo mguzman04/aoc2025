@@ -27,6 +27,7 @@ impl Rotation {
 
 /// Returns the new position of the dial
 pub fn move_dial(initial_position: i32, direction: Direction, clicks: i32) -> i32 {
+    let clicks = clicks % 100;
     match direction {
         Direction::Left => {
             // go negative
@@ -90,6 +91,12 @@ mod test {
     }
 
     #[test]
+    fn dial_left_multiple_cycles() {
+        let new_position = move_dial(95, Direction::Left, 200);
+        assert_eq!(new_position, 95, "Expected to be on the same position");
+    }
+
+    #[test]
     fn dial_right_from_99() {
         let new_position = move_dial(99, Direction::Right, 1);
         assert_eq!(
@@ -117,5 +124,11 @@ mod test {
             "Expected new position to be 10 not {}",
             new_position
         );
+    }
+
+    #[test]
+    fn dial_right_multiple_cycles() {
+        let new_position = move_dial(10, Direction::Right, 200);
+        assert_eq!(new_position, 10, "Expected to be on the same position");
     }
 }
