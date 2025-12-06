@@ -7,7 +7,7 @@ use crate::day1::count_zero_landings;
 mod day1;
 
 fn main() {
-    match read_lines("src/inputs/day1-1sample.txt") {
+    match read_lines("src/inputs/day1-1.txt") {
         Ok(lines) => {
             let (total_zeros, total_crossings) = count_zero_landings(lines);
             println!("Total zeros: {}", total_zeros);
