@@ -143,6 +143,17 @@ mod test {
     }
 
     #[test]
+    fn land_on_zero_left() {
+        let (new_position, total_crossings) = move_dial(10, &Direction::Left, 10);
+        assert_eq!(
+            new_position, 0,
+            "Expected new position to be 0 not {}",
+            new_position
+        );
+        assert_eq!(total_crossings, 1, "Expected to cross zero");
+    }
+
+    #[test]
     fn dial_left_multiple_cycles() {
         let (new_position, total_crossings) = move_dial(95, &Direction::Left, 200);
         assert_eq!(new_position, 95, "Expected to be on the same position");
@@ -177,6 +188,17 @@ mod test {
         assert_eq!(
             new_position, 10,
             "Expected new position to be 10 not {}",
+            new_position
+        );
+        assert_eq!(total_crossings, 1, "Expected to cross zero");
+    }
+
+    #[test]
+    fn land_on_zero_right() {
+        let (new_position, total_crossings) = move_dial(90, &Direction::Right, 10);
+        assert_eq!(
+            new_position, 0,
+            "Expected new position to be 0 not {}",
             new_position
         );
         assert_eq!(total_crossings, 1, "Expected to cross zero");
