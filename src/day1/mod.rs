@@ -1,6 +1,7 @@
 use std::fs::File;
 use std::io::{BufReader, Lines};
 
+#[derive(PartialEq)]
 enum Direction {
     Left,
     Right,
@@ -49,49 +50,32 @@ pub fn count_zero_landings(lines: Lines<BufReader<File>>) -> (i32, i32) {
 
 /// Returns the new position of the dial
 fn move_dial(initial_position: i32, direction: &Direction, clicks: i32) -> (i32, i32) {
-    let mut zero_crossings = clicks / 100;
-    let clicks = clicks % 100;
-    let mut flag = false;
+    let total_movement = match direction {
+        Direction::Left => -clicks,
+        Direction::Right => clicks,
+    };
+    let gross_position = initial_position + total_movement;
+    let final_position = (gross_position % 100 + 100) % 100;
 
-    let final_position: i32;
+    // Calculate Crossings
+    let full_cycles = clicks / 100;
+    let rem_clicks = clicks % 100;
+    let mut total_crossings = full_cycles;
+
     match direction {
         Direction::Left => {
-            // go negative
-            if initial_position == 0 {
-                final_position = 100 - clicks;
-            } else {
-                let remainder = initial_position - clicks;
-                if remainder < 0 {
-                    // crossed zero
-                    zero_crossings += 1;
-                    flag = true;
-                    final_position = 100 + remainder;
-                } else {
-                    final_position = remainder;
-                }
+            if rem_clicks > 0 && initial_position > 0 && rem_clicks >= initial_position {
+                total_crossings += 1;
             }
         }
         Direction::Right => {
-            // go positive
-            if initial_position == 99 {
-                final_position = clicks - 1;
-            } else {
-                let sum = initial_position + clicks;
-                if sum > 99 {
-                    // crossed zero
-                    zero_crossings += 1;
-                    flag = true;
-                    final_position = sum - 100;
-                } else {
-                    final_position = sum;
-                }
+            if rem_clicks > 0 && initial_position + rem_clicks > 99 {
+                total_crossings += 1;
             }
         }
     }
-    if final_position == 0 && !flag {
-        zero_crossings += 1;
-    }
-    (final_position, zero_crossings)
+
+    (final_position, total_crossings)
 }
 
 #[cfg(test)]
