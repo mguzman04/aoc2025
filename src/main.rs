@@ -5,6 +5,7 @@ use std::path::Path;
 use crate::day1::count_zero_landings;
 
 mod day1;
+mod day2;
 
 fn main() {
     match read_lines("src/inputs/day1-1.txt") {
