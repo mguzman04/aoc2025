@@ -1,20 +1,20 @@
 /// Takes in a input of ranges thats are comma seperated.
 /// Each range will be parsed and searched for invalid IDs
 /// The sum of all invalid IDs will be returned
-pub fn invalid_id_sum(input: String) -> i32 {
+pub fn invalid_id_sum(input: String) -> i64 {
     // parse the string into comma seperated strings
     let mut sum = 0;
     let ranges: Vec<&str> = input.rsplit(',').collect();
     for range in ranges.iter() {
         let invalid_id_vec = invalid_ids(range);
-        sum += invalid_id_vec.iter().sum::<i32>();
+        sum += invalid_id_vec.iter().sum::<i64>();
     }
     sum
 }
 
 /// Takes a string slice of the range and returns only the integers that are invalid IDs
 /// Example: Passing "11-22" will return [11,22]
-fn invalid_ids(range: &str) -> Vec<i32> {
+fn invalid_ids(range: &str) -> Vec<i64> {
     let spread = spread_range(range);
     spread
         .split(',')
@@ -26,17 +26,17 @@ fn invalid_ids(range: &str) -> Vec<i32> {
             let mid = s.len() / 2;
             &s[..mid] == &s[mid..]
         })
-        .filter_map(|s| s.parse::<i32>().ok())
+        .filter_map(|s| s.parse::<i64>().ok())
         .collect()
 }
 
 /// Takes a range of integers in the form of strings with the range
 /// seperated with with a '-' and returns a vector of integers in the range (inclusive)
 /// Example: Passing "10-15", will return [10,11,12,13,14,15]
-fn range_to_ints(string_range: &str) -> Vec<i32> {
+fn range_to_ints(string_range: &str) -> Vec<i64> {
     let (min_str, max_str) = string_range.split_once('-').unwrap();
-    let min = min_str.parse::<i32>().unwrap();
-    let max = max_str.parse::<i32>().unwrap();
+    let min = min_str.parse::<i64>().unwrap();
+    let max = max_str.parse::<i64>().unwrap();
     (min..=max).collect()
 }
 
