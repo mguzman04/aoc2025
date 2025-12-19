@@ -65,7 +65,7 @@ mod test {
     #[test]
     fn test_invalid_sum_sample() {
         let input = "11-22,95-115,998-1012,1188511880-1188511890,222220-222224,1698522-1698528,446443-446449,38593856-38593862,565653-565659,824824821-824824827,2121212118-2121212124".to_string();
-        assert_eq!(invalid_id_sum(input), 1227775554);
+        assert_eq!(invalid_id_sum(input), 4174379265);
     }
 
     #[test]
@@ -98,6 +98,28 @@ mod test {
             invalid_ids(range),
             invalid_id_values,
             "Expected invalid IDs is 1188511885"
+        );
+    }
+
+    #[test]
+    fn test_invalid_ids_three_repeats() {
+        let invalid_id_values = vec![999, 1010];
+        let range = "998-1012";
+        assert_eq!(
+            invalid_ids(range),
+            invalid_id_values,
+            "Expected invalid IDs is 999 and 1010"
+        );
+    }
+
+    #[test]
+    fn test_invalid_ids_three_repeats_pairs() {
+        let invalid_id_values = vec![565656];
+        let range = "565653-565659";
+        assert_eq!(
+            invalid_ids(range),
+            invalid_id_values,
+            "Expected invalid IDs is 565656"
         );
     }
 
