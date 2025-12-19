@@ -1,26 +1,33 @@
-use regex::Regex;
-
 /// Takes in a input of ranges thats are comma seperated.
 /// Each range will be parsed and searched for invalid IDs
 /// The sum of all invalid IDs will be returned
-fn invalid_id_sum(input: String) -> i32 {
+pub fn invalid_id_sum(input: String) -> i32 {
     // parse the string into comma seperated strings
     let mut sum = 0;
     let ranges: Vec<&str> = input.rsplit(',').collect();
     for range in ranges.iter() {
-        let range_vec = range_to_ints(range);
-        let invalid_ids = invalid_ids(range_vec);
-        sum += invalid_ids.iter().sum::<i32>();
+        let invalid_id_vec = invalid_ids(range);
+        sum += invalid_id_vec.iter().sum::<i32>();
     }
     sum
 }
 
-/// Takes a vector of integers and returns only the integers that are invalid IDs
-/// Example: Passing [11,12,13,14,15,16,17,18,19,20,21,22] will return [11,22]
-fn invalid_ids(range: Vec<i32>) -> Vec<i32> {
-    // TODO: Use regex (?<!\d)((.)\2+)(?!\d)
-    let regex = Regex::new(r"(?<!\d)((.)\2+)(?!\d)");
-    vec![0]
+/// Takes a string slice of the range and returns only the integers that are invalid IDs
+/// Example: Passing "11-22" will return [11,22]
+fn invalid_ids(range: &str) -> Vec<i32> {
+    let spread = spread_range(range);
+    spread
+        .split(',')
+        .filter(|s| {
+            let s = s.trim();
+            if s.len() % 2 != 0 {
+                return false;
+            }
+            let mid = s.len() / 2;
+            &s[..mid] == &s[mid..]
+        })
+        .filter_map(|s| s.parse::<i32>().ok())
+        .collect()
 }
 
 /// Takes a range of integers in the form of strings with the range
@@ -36,8 +43,13 @@ fn range_to_ints(string_range: &str) -> Vec<i32> {
 /// Takes the range and spreads it out to a comma seperated full range
 /// For example if the range is 11-22, the return string slice
 /// is 11,12,13,14,15,16,17,18,19,20,21,22
-fn spread_range(range: &str) -> &str {
-    "uimplemented!"
+fn spread_range(range: &str) -> String {
+    let spread_int = range_to_ints(range);
+    spread_int
+        .into_iter()
+        .map(|num| num.to_string())
+        .collect::<Vec<String>>()
+        .join(",")
 }
 
 #[cfg(test)]
@@ -51,13 +63,41 @@ mod test {
     }
 
     #[test]
+    fn test_invalid_sum_sample() {
+        let input = "11-22,95-115,998-1012,1188511880-1188511890,222220-222224,1698522-1698528,446443-446449,38593856-38593862,565653-565659,824824821-824824827,2121212118-2121212124".to_string();
+        assert_eq!(invalid_id_sum(input), 1227775554);
+    }
+
+    #[test]
     fn test_invalid_ids() {
         let invalid_id_check = vec![11, 22];
-        let range = (11..=22).collect();
+        let range = "11-22";
         assert_eq!(
             invalid_ids(range),
             invalid_id_check,
             "Expected invalid IDs to be 11,22."
+        );
+    }
+
+    #[test]
+    fn test_invalid_ids_non_adjecent() {
+        let invalid_id_values = vec![38593859];
+        let range = "38593856-38593862";
+        assert_eq!(
+            invalid_ids(range),
+            invalid_id_values,
+            "Expected invalid IDs is 38593859"
+        );
+    }
+
+    #[test]
+    fn test_invalid_ids_repeated_sequence() {
+        let invalid_id_values = vec![1188511885];
+        let range = "1188511880-1188511890";
+        assert_eq!(
+            invalid_ids(range),
+            invalid_id_values,
+            "Expected invalid IDs is 1188511885"
         );
     }
 
